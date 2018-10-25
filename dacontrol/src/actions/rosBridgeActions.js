@@ -2,7 +2,7 @@
     Set the url for the rosbridge
 */
 import ROSLIB from "roslib";
-import { setRobotStatus, setupStop, setupRecalibrate, 
+import { setRobotStatus, setupStop, setupRecalibrate, setupMoveDaPose,
     setupHome, setupPause, setupRestart, setupPoseListener} from './robotActions';
 import { setupTuiConfigListener, setupBlockListener } from "./tuiActions";
 
@@ -32,7 +32,8 @@ export const setRosBridgeUrl = (url) => dispatch => {
 
 
 
-const setupRosBridge = (dispatch, url)=>{
+const setupRosBridge = (dispatch, getState, url)=>{
+    console.log("connecting to ",url)
     let ros = new ROSLIB.Ros({url: url});
     
     ros.on('connection', () => {
@@ -64,7 +65,8 @@ const setupRosBridge = (dispatch, url)=>{
     setupRestart(dispatch,ros);
     setupTuiConfigListener(dispatch,ros);
     setupBlockListener(dispatch,ros);
-    setupPoseListener(dispatch,ros);
+    setupPoseListener(dispatch,getState,ros);
+    setupMoveDaPose(dispatch, ros);
     return ros;
 }
 
@@ -77,7 +79,7 @@ export const connectRosBridgeSocket = () => (dispatch, getState) => {
         });
         dispatch({
             type: SET_ROSBRIDGE_SERVER,
-            payload: setupRosBridge(dispatch, url)
+            payload: setupRosBridge(dispatch, getState, url)
         });
     }
     catch{
