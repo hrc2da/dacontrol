@@ -8,6 +8,7 @@ export const SET_RECALIBRATE_CLIENT  = 'SET_RECALIBRATE_CLIENT';
 export const SET_HOMING_CLIENT = 'SET_HOMING_CLIENT';
 export const SET_PAUSE_CLIENT = 'SET_PAUSE_CLIENT';
 export const SET_RESTART_CLIENT = 'SET_RESTART_CLIENT';
+export const SET_MOVE_BLOCK_CLIENT = 'SET_MOVE_BLOCK_CLIENT';
 export const SET_POSE = 'SET_POSE';
 export const SET_POSE_LISTENER = 'SET_POSE_LISTENER';
 export const SET_GOAL_POSITION = 'SET_GOAL_POSITION';
@@ -290,8 +291,71 @@ export const callMoveDaPose = () => (dispatch, getState) => {
     }
 }
 
+/*****************************************************
+ * Move a block 
+ *****************************************************/
+////////////////////////////////////////////////////////
+export const setupMoveBlockClient = (dispatch,rosInstance)=>{
+    const moveBlockClient = new ROSLIB.ActionClient({
+        ros: rosInstance,
+        serverName: '/move_block',
+        actionName: '/dabot/MoveBlockAction'
+    });
+    dispatch({
+        type: SET_MOVE_BLOCK_CLIENT,
+        payload: moveBlockClient
+    });
+}
 
+export const callMoveBlock = (dispatch,getState)=>{
+    const state = getState();
+    const client = state.robot.moveBlockClient;
+    const blockGoal = state.robot.moveBlockGoal;
+    //blockGoal == {id: int, source: string, target: string}
+    const source = getBlockZone(blockGoal.source); //string
+    //getBlockZone("Orbit5")
+    const target = getBlockZone(blockGoal.target); //string
+    const goal = new ROSLIB.Goal({
+        actionClient: client,
+        goalMessage: {
+            id: blockGoal.id,
+            source: {
+                x: source.x,
+                y: source.y
+            },
+            target: {
+                x: target.x,
+                y: target.y
+            },
+            source_x_tolerance: source.xTolerance,
+            source_y_tolerance: source.yTolerance,
+            target_x_tolerance: target.xTolerance,
+            target_y_tolerance: target.yTolerance,
+            block_width: state.robot.blockWidth,                                    
+        }
+    })
 
+}
+
+export const getBlockZone = (zoneId) =>{
+    //zoneId is 0
+    //returns the x and y tolerance for an orbit based on ros params 
+    switch (zoneId) {
+        case "Orbit1":
+            break;
+        case "Orbit1":
+            break;
+        case "Orbit1":
+            break;
+        case "Orbit1":
+            break;
+            case "Orbit1":
+            break;
+    
+        default:
+            break;
+    }
+}
 
 
 
