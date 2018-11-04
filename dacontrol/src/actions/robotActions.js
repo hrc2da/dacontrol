@@ -1,5 +1,6 @@
 import ROSLIB from "roslib";
 import isEqual from "lodash.isequal";
+import { ORBITS_MIN, ORBITS_MAX, ORBITS_LEFT, ORBITS_RIGHT } from "./rosParamsActions";
 
 export const SET_ROBOT_STATUS = 'SET_ROBOT_STATUS';
 export const SET_STOP_CLIENT = 'SET_STOP_CLIENT';
@@ -20,6 +21,10 @@ export const SET_GOAL_ORIENTATION_Y = 'SET_GOAL_ORIENTATION_Y';
 export const SET_GOAL_ORIENTATION_Z = 'SET_GOAL_ORIENTATION_Z';
 export const SET_GOAL_ORIENTATION_W = 'SET_GOAL_ORIENTATION_W';
 export const SET_MOVE_POSE_DA_CLIENT = 'SET_MOVE_POSE_DA_CLIENT';
+export const SET_BLOCK_GOAL_ID = 'SET_BLOCK_GOAL_ID';
+export const SET_BLOCK_GOAL_SOURCE = 'SET_BLOCK_GOAL_SOURCE';
+export const SET_BLOCK_GOAL_TARGET = 'SET_BLOCK_GOAL_TARGET';
+
 
 export const setRobotStatus = status => dispatch => {
   return dispatch({
@@ -338,14 +343,21 @@ export const setupMoveBlockClient = (dispatch,rosInstance)=>{
     });
 }
 
-export const callMoveBlock = (dispatch,getState)=>{
+export const updateBlockGoal = (updateSelector, value) => dispatch => {
+  dispatch({
+    type: updateSelector,
+    payload: value //handle type parsing in the reducer
+  });
+};
+
+export const callMoveBlock = () => (dispatch,getState)=>{
     const state = getState();
     const client = state.robot.moveBlockClient;
-    const blockGoal = state.robot.moveBlockGoal;
+    const blockGoal = state.robot.blockGoal;
     //blockGoal == {id: int, source: string, target: string}
-    const source = getBlockZone(blockGoal.source); //string
+    const source = getBlockZone(blockGoal.source,state); //string
     //getBlockZone("Orbit5")
-    const target = getBlockZone(blockGoal.target); //string
+    const target = getBlockZone(blockGoal.target,state); //string
     const goal = new ROSLIB.Goal({
         actionClient: client,
         goalMessage: {
@@ -364,41 +376,70 @@ export const callMoveBlock = (dispatch,getState)=>{
             target_y_tolerance: target.yTolerance,
             block_width: state.robot.blockWidth,                                    
         }
-    })
+    });
+    goal.on('feedback', function(feedback) {
+      console.log('Feedback: ' + feedback);
+    });
+  
+    goal.on('result', function(result) {
+      console.log('Final Result: ' + result);
+    });
+  
+    goal.send();
 
 }
 
-export const getBlockZone = (zoneId) =>{
+export const getBlockZone = (zoneId,state) =>{
     //zoneId is 0
     //returns the x and y tolerance for an orbit based on ros params 
+    const orbitsMin = state.rosParams.params[ORBITS_MIN];
+    const orbitWidth = (state.rosParams.params[ORBITS_LEFT]-state.rosParams.params[ORBITS_RIGHT]);
+    const orbitHeight = state.rosParams.params[ORBITS_MAX]-state.rosParams.params[ORBITS_MIN];
+    const orbitsMidPointX = state.rosParams.params[ORBITS_LEFT]+ orbitWidth/2;
+    let x,y,xT,yT = 0;
     switch (zoneId) {
-        case "Orbit1":
+        case "Orbit 1":
+            x = orbitsMidPointX;
+            y = orbitsMin + orbitHeight/2;
+            xT = orbitWidth/2;
+            yT = orbitHeight/2;
             break;
-        case "Orbit1":
+        case "Orbit 2":
+            x = orbitsMidPointX;
+            y = orbitsMin + 3*orbitHeight/2;
+            xT = orbitWidth/2;
+            yT = orbitHeight/2;
             break;
-        case "Orbit1":
+        case "Orbit 3":
+            x = orbitsMidPointX;
+            y = orbitsMin + 5*orbitHeight/2;
+            xT = orbitWidth/2;
+            yT = orbitHeight/2;
             break;
-        case "Orbit1":
+        case "Orbit 4":
+            x = orbitsMidPointX;
+            y = orbitsMin + 7*orbitHeight/2;
+            xT = orbitWidth/2;
+            yT = orbitHeight/2;
             break;
-            case "Orbit1":
+        case "Orbit 5":
+            x = orbitsMidPointX;
+            y = orbitsMin + 9*orbitHeight/2;
+            xT = orbitWidth/2;
+            yT = orbitHeight/2;
             break;
-    
+        case "Staging":
+            x = orbitsMidPointX;
+            y = orbitsMin + orbitHeight/2;
+            xT = orbitWidth/2;
+            yT = orbitHeight/2;
+            break;
         default:
+            throw("Not a valid zone");
             break;
     }
+    return {x: x, y: y, xTolerance: xT, yTolerance: yT}
 }
-
-
-    goal.on("result", result => {
-      //console.log('Goal Completion Status: ' + status);
-      dispatch(setRobotStatus("finished moving to pose"));
-    });
-    goal.send();
-  } catch (e) {
-    console.log("calling move pose failed", e);
-    return;
-  }
-};
 
 /*****************************************************
  * Update the robot pose
@@ -415,11 +456,13 @@ export const setupPoseListener = (dispatch, getState, rosInstance) => {
   });
   poseListener.subscribe(message => {
     const curPose = getState().robot.pose;
-    dispatch({
-      type: SET_POSE,
-      payload: message.pose
-    });
+    //ignore pose messages if robot hasn't moved
     if (!poseEqual(curPose, message.pose)) {
+      dispatch({
+        type: SET_POSE,
+        payload: message.pose
+      });
+      //also update the goal position so we don't have to do it manually
       dispatch({
         type: SET_GOAL_POSITION,
         payload: message.pose.position

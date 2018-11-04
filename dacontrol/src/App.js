@@ -9,6 +9,7 @@ import MovementContainer from "./containers/movementContainer";
 import TableConfigContainer from "./containers/tableConfigContainer";
 import BlockTrackerContainer from "./containers/blockTrackerContainer";
 import RosParamsContainer from "./containers/rosParamsContainer";
+import MoveBlockContainer from "./containers/moveBlockContainer";
 
 class App extends Component {
   render() {
@@ -42,13 +43,17 @@ class App extends Component {
             <Col sm={4}>
               <BlockTrackerContainer />
             </Col>
-            <Col sm={4}>
-              <RosParamsContainer />
-            </Col>
+            <Col sm={4} />
           </Row>
 
           <Row>
             <Col sm={4} />
+            <Col sm={4} >
+              <MoveBlockContainer />
+            </Col>
+            <Col sm={4} >
+              <RosParamsContainer />
+            </Col>
           </Row>
         </Container>
       </div>

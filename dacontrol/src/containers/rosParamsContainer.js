@@ -1,5 +1,5 @@
 import { connect } from "react-redux";
-
+import { setRosParam } from "../actions/rosParamsActions";
 import RosParamsComponent from "../components/rosParamsComponent";
 
 const mapStateToProps = state => {
@@ -9,7 +9,9 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = dispatch => {
-  return {};
+  return {
+    handleChange: (e)=>dispatch(setRosParam(e.target.name,parseFloat(e.target.value)))
+  };
 };
 
 export default connect(

@@ -9,10 +9,9 @@ import {
 export default (state = {}, action) => {
   switch (action.type) {
     case SET_ROS_PARAMS:
-      console.log("setting params");
       return {
-        ...state,
-        params: action.payload
+        ...state, params: {
+          ...state.params, [action.payload.param] : action.payload.value} //[key] is an ED6 thing...
       }; //replace the entire state
     case SET_ROS_PARAM_ACCESSORS:
       return {

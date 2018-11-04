@@ -8,7 +8,8 @@ import { SET_ROBOT_STATUS, SET_PAUSE_CLIENT,
     SET_MOVEIT_CANCEL_CLIENT, SET_GOAL_POSITION,
     SET_GOAL_POSITION_X, SET_GOAL_POSITION_Y, SET_GOAL_POSITION_Z,
     SET_GOAL_ORIENTATION_X, SET_GOAL_ORIENTATION_Y,
-    SET_GOAL_ORIENTATION_Z, SET_GOAL_ORIENTATION_W} from '../actions/robotActions'
+    SET_GOAL_ORIENTATION_Z, SET_GOAL_ORIENTATION_W, SET_BLOCK_GOAL_ID,
+    SET_BLOCK_GOAL_SOURCE, SET_BLOCK_GOAL_TARGET, SET_MOVE_BLOCK_CLIENT} from '../actions/robotActions'
 export default (state = {}, action) => {
     switch (action.type) {
         case SET_ROBOT_STATUS:
@@ -113,7 +114,31 @@ export default (state = {}, action) => {
             return {
                 ...state, movePoseDaClient: action.payload
             }
+        case SET_MOVE_BLOCK_CLIENT:
+            return {
+                ...state, moveBlockClient: action.payload
+            }
+        case SET_BLOCK_GOAL_ID:
+            return {
+                ...state, blockGoal: {
+                    ...state.blockGoal, id: action.payload                                                                                
+                }
+            }                                                                                                                                                            
+
+        case SET_BLOCK_GOAL_SOURCE:
+            return {
+                ...state, blockGoal: {
+                    ...state.blockGoal, source: action.payload
+                }  
+            }
+
+        case SET_BLOCK_GOAL_TARGET:
+            return {
+                ...state, blockGoal: {
+                    ...state.blockGoal, target: action.payload                                                                                
+                }
+            }
         default:
             return state
     }
-}
+} 

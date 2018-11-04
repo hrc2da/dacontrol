@@ -10,7 +10,8 @@ import {
   setupHome,
   setupPause,
   setupRestart,
-  setupPoseListener
+  setupPoseListener,
+  setupMoveBlockClient
 } from "./robotActions";
 import { setupTuiConfigListener, setupBlockListener } from "./tuiActions";
 import { getRosParams, setupRosParamAccessors } from "./rosParamsActions";
@@ -71,8 +72,9 @@ const setupRosBridge = (dispatch, getState, url) => {
   setupBlockListener(dispatch, ros);
   setupPoseListener(dispatch, getState, ros);
   setupMoveDaPose(dispatch, ros);
-  setupRosParamAccessors(dispatch, ros);
-  //getRosParams(dispatch, getState()), ros;
+  setupRosParamAccessors(dispatch, getState, ros);
+  setupMoveBlockClient(dispatch, ros);
+  //getRosParams(dispatch, getState()); moving this inside setupRosParamAccessors (to wait for accessors)
   return ros;
 };
 
