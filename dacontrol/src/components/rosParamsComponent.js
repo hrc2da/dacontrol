@@ -6,7 +6,7 @@ const RosParamsComponent = ({ rosParams, handleChange }) => {
   const rows = sortedParamsKeys.map(param => {
     let val = null;
     try{
-      val = rosParams[param].toFixed(2);
+      val = rosParams[param].toFixed(4);
     }
     catch(e){
       console.log(e);
@@ -20,7 +20,7 @@ const RosParamsComponent = ({ rosParams, handleChange }) => {
               <Form.Control
                 type="number"
                 name={param}
-                step={0.01}
+                step={0.0001}
                 value={val}
                 onChange={handleChange}
               />

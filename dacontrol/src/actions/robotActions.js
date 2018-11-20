@@ -1,6 +1,6 @@
 import ROSLIB from "roslib";
 import isEqual from "lodash.isequal";
-import { ORBITS_MIN, ORBITS_MAX, ORBITS_LEFT, ORBITS_RIGHT } from "./rosParamsActions";
+import { ORBITS_MIN, ORBITS_MAX, ORBITS_LEFT, ORBITS_RIGHT, TUIO_X_MAX, TUIO_Y_MAX, TUIO_Y_MIN } from "./rosParamsActions";
 
 export const SET_ROBOT_STATUS = 'SET_ROBOT_STATUS';
 export const SET_STOP_CLIENT = 'SET_STOP_CLIENT';
@@ -24,7 +24,7 @@ export const SET_MOVE_POSE_DA_CLIENT = 'SET_MOVE_POSE_DA_CLIENT';
 export const SET_BLOCK_GOAL_ID = 'SET_BLOCK_GOAL_ID';
 export const SET_BLOCK_GOAL_SOURCE = 'SET_BLOCK_GOAL_SOURCE';
 export const SET_BLOCK_GOAL_TARGET = 'SET_BLOCK_GOAL_TARGET';
-
+export const SET_EOSS_BUILDER_SLEEP_CLIENT = 'SET_EOSS_BUILDER_SLEEP_CLIENT';
 
 export const setRobotStatus = status => dispatch => {
   return dispatch({
@@ -64,6 +64,40 @@ export const callStop = () => (dispatch, getState) => {
     return;
   }
 };
+
+/*****************************************************
+ * eoss_builder sleep/awake Functions
+ *****************************************************/
+/////////////////////////////////////////////////////////////
+export const setupEossBuilder = (dispatch, rosInstance) => {
+  const eossBuilderSleepClient = new ROSLIB.Service({
+    ros: rosInstance,
+    name: '/eoss_builder_sleep_control',
+    serviceType: 'SleepControl'
+  });
+  dispatch({
+    type: SET_EOSS_BUILDER_SLEEP_CLIENT,
+    payload: eossBuilderSleepClient
+  });
+}
+export const callEossBuilderSleepClient = (command) => (dispatch, getState) => {
+  try {
+    const client = getState().robot.eossBuilderSleepClient;
+    const request = new ROSLIB.ServiceRequest({
+      command: command,
+      wait: false
+    });
+    dispatch(setRobotStatus("sending "+command+" to the EOSS Builder"));
+    client.callService(request, result => {
+      dispatch(setRobotStatus("EOSS Builder is now "+result));
+    });
+  }
+  catch {
+    return;
+  }
+
+}
+
 
 /*****************************************************
  * Recalibration Functions
@@ -361,20 +395,20 @@ export const callMoveBlock = () => (dispatch,getState)=>{
     const goal = new ROSLIB.Goal({
         actionClient: client,
         goalMessage: {
-            id: blockGoal.id,
+            id: parseInt(blockGoal.id),
             source: {
-                x: source.x,
-                y: source.y
+                x: parseFloat(source.x),
+                y: parseFloat(source.y)
             },
             target: {
-                x: target.x,
-                y: target.y
+                x: parseFloat(target.x),
+                y: parseFloat(target.y)
             },
-            source_x_tolerance: source.xTolerance,
-            source_y_tolerance: source.yTolerance,
-            target_x_tolerance: target.xTolerance,
-            target_y_tolerance: target.yTolerance,
-            block_width: state.robot.blockWidth,                                    
+            source_x_tolerance: parseFloat(source.xTolerance),
+            source_y_tolerance: parseFloat(source.yTolerance),
+            target_x_tolerance: parseFloat(target.xTolerance),
+            target_y_tolerance: blockGoal.target=="Staging" ? parseFloat(target.yTolerance) : parseFloat(0),
+            block_size: 0.9*0.133//state.robot.blockWidth,                                    
         }
     });
     goal.on('feedback', function(feedback) {
@@ -393,9 +427,13 @@ export const getBlockZone = (zoneId,state) =>{
     //zoneId is 0
     //returns the x and y tolerance for an orbit based on ros params 
     const orbitsMin = state.rosParams.params[ORBITS_MIN];
+    const tableLeft = state.rosParams.params[TUIO_X_MAX];
+    const tableHeight = state.rosParams.params[TUIO_Y_MAX]-state.rosParams.params[TUIO_Y_MIN];
+    const tableMidpointY = state.rosParams.params[TUIO_Y_MIN]+tableHeight/2;
+    const orbitsLeft = state.rosParams.params[ORBITS_LEFT];
     const orbitWidth = (state.rosParams.params[ORBITS_LEFT]-state.rosParams.params[ORBITS_RIGHT]);
-    const orbitHeight = state.rosParams.params[ORBITS_MAX]-state.rosParams.params[ORBITS_MIN];
-    const orbitsMidPointX = state.rosParams.params[ORBITS_LEFT]+ orbitWidth/2;
+    const orbitHeight = (state.rosParams.params[ORBITS_MAX]-state.rosParams.params[ORBITS_MIN])/5;
+    const orbitsMidPointX = state.rosParams.params[ORBITS_LEFT]-orbitWidth/2;
     let x,y,xT,yT = 0;
     switch (zoneId) {
         case "Orbit 1":
@@ -417,26 +455,26 @@ export const getBlockZone = (zoneId,state) =>{
             yT = orbitHeight/2;
             break;
         case "Orbit 4":
-            x = orbitsMidPointX;
+        //currently having trouble reaching orbits 4 and 5
+            x = orbitsMidPointX; //+orbitWidth*0.25;
             y = orbitsMin + 7*orbitHeight/2;
             xT = orbitWidth/2;
             yT = orbitHeight/2;
             break;
         case "Orbit 5":
-            x = orbitsMidPointX;
+            x = orbitsMidPointX; //+orbitWidth*0.25;
             y = orbitsMin + 9*orbitHeight/2;
             xT = orbitWidth/2;
             yT = orbitHeight/2;
             break;
         case "Staging":
-            x = orbitsMidPointX;
-            y = orbitsMin + orbitHeight/2;
-            xT = orbitWidth/2;
-            yT = orbitHeight/2;
+            x = tableLeft-(tableLeft-orbitsLeft-.17)/2;
+            y = tableMidpointY;
+            xT = (tableLeft-orbitsLeft-0.17)/2;
+            yT = tableHeight/2;
             break;
         default:
             throw("Not a valid zone");
-            break;
     }
     return {x: x, y: y, xTolerance: xT, yTolerance: yT}
 }

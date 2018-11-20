@@ -7,7 +7,8 @@ import {
   callUnPause,
   callRestart,
   updateGoal,
-  callMoveDaPose
+  callMoveDaPose,
+  callEossBuilderSleepClient
 } from "../actions/robotActions";
 import MovementComponent from "../components/movementComponent";
 
@@ -40,7 +41,9 @@ const mapDispatchToProps = dispatch => {
       dispatch(callUnPause());
     },
     handleGoalChange: e => dispatch(updateGoal(e.target.name, e.target.value)),
-    handleMove: e => dispatch(callMoveDaPose())
+    handleMove: e => dispatch(callMoveDaPose()),
+    handleSleepEoss: e => dispatch(callEossBuilderSleepClient("sleep")),
+    handleWakeEoss: e => dispatch(callEossBuilderSleepClient("wake"))
   };
 };
 

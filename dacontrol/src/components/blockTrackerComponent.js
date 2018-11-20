@@ -3,7 +3,8 @@ import { Card, Table, Button } from 'react-bootstrap';
 
 const BlockTrackerComponent = ({blocks}) => {
     const rows = blocks.map((block)=>{
-        return  <tr key={block.id}>
+    
+        return  <tr key={block.id+(new Date).getTime().toString()}>
                     <td>{block.id}</td>
                     <td>{block.x.toFixed(4)}</td>
                     <td>{block.y.toFixed(4)}</td>

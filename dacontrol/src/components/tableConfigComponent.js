@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Table } from 'react-bootstrap';
 
 
-const TableConfigComponent = ({configString}) => {
+const TableConfigComponent = ({configString,stagingBlocks}) => {
     let orbits = [[],[],[],[],[]]
     for(let i =0; i<configString.length; i++){
         if(configString[i]=="1"){
@@ -15,7 +15,7 @@ const TableConfigComponent = ({configString}) => {
                 <tbody>
                     <tr>
                         <td style={{"width":"10%"}}>Available</td>
-                        <td>{/*not supported yet*/}</td> 
+                        <td>{stagingBlocks.toString()}</td> 
                     </tr>
                     <tr>
                         <td>Orbit 1</td>

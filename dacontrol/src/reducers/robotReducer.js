@@ -2,7 +2,7 @@
     Handles changes to the robot and its status (mostly its status)
 */
 import { SET_ROBOT_STATUS, SET_PAUSE_CLIENT, 
-    SET_RECALIBRATE_CLIENT, SET_HOMING_CLIENT, 
+    SET_RECALIBRATE_CLIENT, SET_HOMING_CLIENT, SET_EOSS_BUILDER_SLEEP_CLIENT,
     SET_STOP_CLIENT, SET_RESTART_CLIENT, SET_POSE,
     SET_POSE_LISTENER, SET_MOVE_POSE_DA_CLIENT,
     SET_MOVEIT_CANCEL_CLIENT, SET_GOAL_POSITION,
@@ -137,6 +137,11 @@ export default (state = {}, action) => {
                 ...state, blockGoal: {
                     ...state.blockGoal, target: action.payload                                                                                
                 }
+            }
+        
+        case SET_EOSS_BUILDER_SLEEP_CLIENT:
+            return {
+                ...state, eossBuilderSleepClient: action.payload
             }
         default:
             return state

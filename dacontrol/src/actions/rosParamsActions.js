@@ -11,8 +11,8 @@ export const TUIO_X_MAX = "TUIO_X_MAX";
 export const TUIO_Y_MAX = "TUIO_Y_MAX";
 export const ARM_X_MIN = "ARM_X_MIN";
 export const ARM_Y_MIN = "ARM_Y_MIN";
-export const ARM_X_MAX = "ARM_X_MAX";
-export const ARM_Y_MAX = "ARM_Y_MAX";
+export const ARM_X_DIST = "ARM_X_DIST";
+export const ARM_Y_DIST = "ARM_Y_DIST";
 export const GRASP_HEIGHT = "GRASP_HEIGHT";
 export const DROP_HEIGHT = "DROP_HEIGHT";
 
@@ -138,13 +138,13 @@ export const setupRosParamAccessors = (dispatch, getState, rosInstance) => {
     ros: rosInstance,
     name: ARM_Y_MIN
   });
-  rosParamSetters[ARM_X_MAX] = new ROSLIB.Param({
+  rosParamSetters[ARM_X_DIST] = new ROSLIB.Param({
     ros: rosInstance,
-    name: ARM_X_MAX
+    name: ARM_X_DIST
   });
-  rosParamSetters[ARM_Y_MAX] = new ROSLIB.Param({
+  rosParamSetters[ARM_Y_DIST] = new ROSLIB.Param({
     ros: rosInstance,
-    name: ARM_Y_MAX
+    name: ARM_Y_DIST
   });
   dispatch({
     type: SET_ROS_PARAM_ACCESSORS,

@@ -16,7 +16,9 @@ const MovementComponent = ({
   goalPositionX,
   goalPositionY,
   goalPositionZ,
-  handleRestart
+  handleRestart,
+  handleSleepEoss,
+  handleWakeEoss
 }) => {
   return (
     <Card>
@@ -95,6 +97,17 @@ const MovementComponent = ({
         <Row>
           <Button variant="success" onClick={handleRestart}>
             Restart Arm
+          </Button>
+        </Row>
+
+        <Row>
+          <Button variant="warning" onClick={handleSleepEoss}>
+            Sleep EOSS Builder
+          </Button>
+        </Row>
+        <Row>
+          <Button variant="success" onClick={handleWakeEoss}>
+            Wake EOSS Builder
           </Button>
         </Row>
       </Card.Body>
