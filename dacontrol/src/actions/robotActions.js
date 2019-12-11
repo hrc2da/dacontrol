@@ -468,9 +468,9 @@ export const getBlockZone = (zoneId,state) =>{
             yT = orbitHeight/2;
             break;
         case "Staging":
-            x = tableLeft-(tableLeft-orbitsLeft-.17)/2;
+            x = tableLeft-(tableLeft-orbitsLeft)/2;
             y = tableMidpointY;
-            xT = (tableLeft-orbitsLeft-0.17)/2;
+            xT = (tableLeft-orbitsLeft)/2;
             yT = tableHeight/2;
             break;
         default:
